@@ -43,6 +43,18 @@ void Game::initObstacles()
 	this->obstacle_top.setFillColor(sf::Color::White);
 }
 
+void Game::initBmp()
+{
+	this->welcomeBmp.loadFromFile("Graphics/welcome.bmp");
+	this->welcomeScreen.setTexture(this->welcomeBmp);
+	this->failBmp.loadFromFile("Graphics/failed.bmp");
+	this->failScreen.setTexture(this->failBmp);
+	this->welcomeScreen.setScale(9.375, 9.375);
+	this->failScreen.setScale(9.375, 9.375);
+	this->welcomeScreen.setPosition(0.f, 100.f);
+	this->failScreen.setPosition(0.f, 100.f);
+}
+
 //Constructor
 Game::Game()
 {
@@ -53,6 +65,7 @@ Game::Game()
 	this->initFont();
 	this->initText();
 	this->initPlayer();
+	this->initBmp();
 }
 
 //Deconstructor
@@ -66,6 +79,17 @@ Game::~Game()
 const bool Game::getWindowIsOpen() const
 {
 	return this->window->isOpen();
+}
+
+void Game::renderWelcome()
+{
+}
+
+void Game::renderFail()
+{
+	this->window->clear(sf::Color(0, 0, 0, 255));
+	this->window->draw(this->failScreen);
+	this->window->display();
 }
 
 void Game::initPlayer()
@@ -231,10 +255,18 @@ void Game::update()
 	//Failed screen
 	if (this->end_game == true)
 	{
-		this->end_game = false;
 		this->score = 0;
 		this->obstacles.clear();
 		this->player->resetPos();
+		while (this->end_game == true)
+		{
+			this->renderFail();
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+			{
+				this->end_game = false;
+				break;
+			}
+		}
 	}
 }
 

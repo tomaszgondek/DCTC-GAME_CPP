@@ -32,6 +32,10 @@ private:
 	sf::RectangleShape obstacle;
 	sf::RectangleShape obstacle_top;
 	sf::RectangleShape outline;
+	sf::Sprite failScreen;
+	sf::Sprite welcomeScreen;
+	sf::Texture welcomeBmp;
+	sf::Texture failBmp;
 	Player* player;
 	//Resources
 	sf::Font font;
@@ -43,6 +47,7 @@ private:
 	void initVariables();
 	void initWindow();
 	void initObstacles();
+	void initBmp();
 
 public:
 	//Constructor / deconstructor
@@ -51,6 +56,8 @@ public:
 	//Accessors
 	const bool getWindowIsOpen() const;
 	//functions
+	void renderWelcome();
+	void renderFail();
 	void initPlayer();
 	void initFont();
 	void initText();
