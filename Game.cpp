@@ -16,13 +16,16 @@ void Game::initVariables()
 	float gravity;
 	float speedup;
 	bool end_game;
+	bool ignore_next_point;
 	this->gapSize = 250.f;
 	this->obstacle_spawn_timer_MAX = 180.f;
 	this->obstacle_spawn_timer = this->obstacle_spawn_timer_MAX;
 	this->score = 0;
 	this->max_obstacles = 16;
 	this->gravity = 0.f;
+	this->speedup = -4.f;
 	this->end_game = false;
+	this->ignore_next_point = false;
 }
 
 //Initializing Window
@@ -83,6 +86,9 @@ const bool Game::getWindowIsOpen() const
 
 void Game::renderWelcome()
 {
+	this->window->clear(sf::Color(0, 0, 0, 255));
+	this->window->draw(this->welcomeScreen);
+	this->window->display();
 }
 
 void Game::renderFail()
@@ -175,7 +181,7 @@ void Game::updateObstacles()
 {
 	if (this->obstacles.size() < this->max_obstacles)
 	{
-		if (this->obstacle_spawn_timer >= this->obstacle_spawn_timer_MAX)
+		if (this->obstacle_spawn_timer >= this->obstacle_spawn_timer_MAX || this->obstacles.size() == 0)
 		{
 			this->spawnObstacle();
 			this->obstacle_spawn_timer = 0.f;
@@ -188,12 +194,18 @@ void Game::updateObstacles()
 	//Move obstacles
 	for (int i = 0; i < this->obstacles.size(); i++)
 	{
-		this->obstacles[i].move(-4.f, 0.f);
+		this->obstacles[i].move(this->speedup, 0.f);
 		//check if outside of the screen
 		if (this->obstacles[i].getPosition().x + this->obstacles[i].getSize().x <= 0)
 		{
 			this->obstacles.erase(this->obstacles.begin() + i);
-			this->score += 1;
+			if (this->ignore_next_point == false)
+			{
+				this->score += 1;
+				this->speedup -= 0.2;
+				this->ignore_next_point = true;
+			}				
+			else this->ignore_next_point = false;
 		}
 
 	}
@@ -261,7 +273,8 @@ void Game::update()
 		while (this->end_game == true)
 		{
 			this->renderFail();
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+			this->pollEvents();
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
 			{
 				this->end_game = false;
 				break;
