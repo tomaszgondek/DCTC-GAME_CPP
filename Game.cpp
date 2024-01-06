@@ -1,4 +1,6 @@
 #include "Game.h"
+#include "Player.h"
+#include <iostream>
 using namespace std;
 
 void Game::initVariables()
@@ -11,11 +13,14 @@ void Game::initVariables()
 	int max_obstacles;
 	float gapSize;
 	float last_obstacle_y;
+	float gravity;
+	float speedup;
 	this->gapSize = 250.f;
 	this->obstacle_spawn_timer_MAX = 180.f;
 	this->obstacle_spawn_timer = this->obstacle_spawn_timer_MAX;
 	this->score = 0;
 	this->max_obstacles = 16;
+	this->gravity = 0.f;
 }
 
 //Initializing Window
@@ -45,18 +50,25 @@ Game::Game()
 	this->initObstacles();
 	this->initFont();
 	this->initText();
+	this->initPlayer();
 }
 
 //Deconstructor
 Game::~Game()
 {
 	delete this->window;
+	delete this->player;
 }
 
 //Getting window state
 const bool Game::getWindowIsOpen() const
 {
 	return this->window->isOpen();
+}
+
+void Game::initPlayer()
+{
+	this->player = new Player();
 }
 
 void Game::initFont()
@@ -190,6 +202,23 @@ void Game::update()
 	this->pollEvents();
 	this->updateObstacles();
 	this->updateText();
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	{
+		this->gravity -= 0.1;
+		this->player->move(0, -1.5 + this->gravity);
+		this->player->changeTextureUp();
+	}
+	else
+	{
+		this->gravity += 0.1;
+		this->player->move(0, 1.5 + this->gravity);
+		this->player->changeTextureDown();
+	}
+	if (this->player->touchingUp || this->player->touchingDown)
+	{
+		this->gravity = 0.f;
+	}
+
 }
 
 //Rendering things
@@ -198,6 +227,7 @@ void Game::render()
 	//rendering game objects
 	this->window->clear(sf::Color(0, 0, 0, 255));
 	this->renderObstacles();
+	this->player->render(*this->window);
 	this->drawOutline();
 	this->renderScoreText();
 	this->window->display();

@@ -5,6 +5,7 @@
 #include "SFML/Network.hpp"
 #include <iostream>
 #include <sstream>
+#include "Player.h"
 /*
 * Main game class - game engine
 */
@@ -23,12 +24,14 @@ private:
 	int max_obstacles;
 	float last_obstacle_y;
 	float obstacle_tracker;
+	float gravity;
 	//Game objects
 	std::vector<sf::RectangleShape> obstacles;
 	std::vector<sf::RectangleShape> obstacles_top;
 	sf::RectangleShape obstacle;
 	sf::RectangleShape obstacle_top;
 	sf::RectangleShape outline;
+	Player* player;
 	//Resources
 	sf::Font font;
 	//Text
@@ -47,6 +50,7 @@ public:
 	//Accessors
 	const bool getWindowIsOpen() const;
 	//functions
+	void initPlayer();
 	void initFont();
 	void initText();
 	void renderScoreText();
