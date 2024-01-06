@@ -15,12 +15,14 @@ void Game::initVariables()
 	float last_obstacle_y;
 	float gravity;
 	float speedup;
+	bool end_game;
 	this->gapSize = 250.f;
 	this->obstacle_spawn_timer_MAX = 180.f;
 	this->obstacle_spawn_timer = this->obstacle_spawn_timer_MAX;
 	this->score = 0;
 	this->max_obstacles = 16;
 	this->gravity = 0.f;
+	this->end_game = false;
 }
 
 //Initializing Window
@@ -115,9 +117,7 @@ void Game::drawOutline()
 void Game::spawnObstacle()
 {
 	//bottom
-	this->last_obstacle_y = static_cast<float>(rand() % (static_cast<int>(this->window->getSize().y - this->gapSize + 50)));
-	if (this->last_obstacle_y < this->gapSize)
-		this->last_obstacle_y = this->gapSize + 50;
+	this->last_obstacle_y = this->gapSize - 100 + static_cast<float>(rand() % (static_cast<int>(this->window->getSize().y - this->gapSize)));
 	this->obstacle.setPosition
 	(
 		1200.f,
@@ -202,15 +202,17 @@ void Game::update()
 	this->pollEvents();
 	this->updateObstacles();
 	this->updateText();
+	this->player->update();
+	//Handling keyboard input
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
 	{
-		this->gravity -= 0.1;
+		this->gravity -= 0.12;
 		this->player->move(0, -1.5 + this->gravity);
 		this->player->changeTextureUp();
 	}
 	else
 	{
-		this->gravity += 0.1;
+		this->gravity += 0.12;
 		this->player->move(0, 1.5 + this->gravity);
 		this->player->changeTextureDown();
 	}
@@ -218,7 +220,22 @@ void Game::update()
 	{
 		this->gravity = 0.f;
 	}
-
+	//Handling collisions
+	for (int i = 0; i < this->obstacles.size(); i++)
+	{
+		if (this->player->boundingBox.intersects(this->obstacles[i].getGlobalBounds()))
+		{
+			this->end_game = true;
+		}
+	}
+	//Failed screen
+	if (this->end_game == true)
+	{
+		this->end_game = false;
+		this->score = 0;
+		this->obstacles.clear();
+		this->player->resetPos();
+	}
 }
 
 //Rendering things

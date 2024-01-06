@@ -25,6 +25,7 @@ private:
 	float last_obstacle_y;
 	float obstacle_tracker;
 	float gravity;
+	bool end_game;
 	//Game objects
 	std::vector<sf::RectangleShape> obstacles;
 	std::vector<sf::RectangleShape> obstacles_top;

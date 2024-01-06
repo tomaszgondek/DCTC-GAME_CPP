@@ -20,12 +20,18 @@ void Player::initPlayer()
 
 Player::Player()
 {
+	this->boundingBox = this->playerSprite.getGlobalBounds();
 	this->initTexture();
 	this->initPlayer();
 }
 
 Player::~Player()
 {
+}
+
+void Player::getBoundingBox()
+{
+	this->boundingBox = this->playerSprite.getGlobalBounds();
 }
 
 void Player::changeTextureUp()
@@ -38,6 +44,11 @@ void Player::changeTextureDown()
 	this->playerSprite.setTexture(this->playerTexture);
 }
 
+void Player::resetPos()
+{
+	this->playerSprite.setPosition(sf::Vector2f(150.f, 400.f));
+}
+
 void Player::render(sf::RenderTarget& target)
 {
 	target.draw(this->playerSprite);
@@ -45,7 +56,7 @@ void Player::render(sf::RenderTarget& target)
 
 void Player::update()
 {
-
+	this->getBoundingBox();
 }
 
 void Player::move(const float dirX, const float dirY)

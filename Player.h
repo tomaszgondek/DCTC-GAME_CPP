@@ -18,14 +18,17 @@ private:
 	void initTexture();
 	void initPlayer();
 public:
+	sf::FloatRect boundingBox;
 	bool touchingUp;
 	bool touchingDown;
 	//Constructor / Decunstructor
 	Player();
 	virtual ~Player();
 	//Functions
+	void getBoundingBox();
 	void changeTextureUp();
 	void changeTextureDown();
+	void resetPos();
 	void render(sf::RenderTarget& target);
 	void update();
 	void move(const float dirX, const float dirY);
