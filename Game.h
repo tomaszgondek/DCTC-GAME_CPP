@@ -26,8 +26,12 @@ private:
 	float obstacle_tracker;
 	float gravity;
 	float speedup;
+	float offset;
 	bool end_game;
 	bool ignore_next_point;
+	int high_score;
+	bool welcome_flag;
+	bool tutorial_flag;
 	//Game objects
 	std::vector<sf::RectangleShape> obstacles;
 	std::vector<sf::RectangleShape> obstacles_top;
@@ -38,11 +42,26 @@ private:
 	sf::Sprite welcomeScreen;
 	sf::Texture welcomeBmp;
 	sf::Texture failBmp;
+	sf::Sprite starsT1;
+	sf::Sprite starsT2;
+	sf::Sprite starsT3;
+	sf::Sprite starsT11;
+	sf::Sprite starsT21;
+	sf::Sprite starsT31;
+	sf::Sprite staticStars;
+	sf::Sprite staticStars2;
+	sf::Texture starTexture;
+	sf::Texture starTexture2;
+	sf::Texture starTexture3;
 	Player* player;
 	//Resources
 	sf::Font font;
 	//Text
 	sf::Text scoreText;
+	sf::Text uiTextscore;
+	sf::Text uiText;
+	sf::Text welcomeText;
+	sf::Text tutorialText;
 	//Events
 	sf::Event ev;
 	//private functions
@@ -58,11 +77,15 @@ public:
 	//Accessors
 	const bool getWindowIsOpen() const;
 	//functions
+	void renderBackground();
+	void updateBackground(float offset);
 	void renderWelcome();
 	void renderFail();
 	void initPlayer();
 	void initFont();
 	void initText();
+	void initUItext();
+	void drawUItext();
 	void renderScoreText();
 	void updateText();
 	void initOutline();
