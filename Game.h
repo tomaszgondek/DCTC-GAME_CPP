@@ -10,7 +10,7 @@
 * Main game class - game engine
 */
 
-class Game
+class Game: public Player
 {
 private:
 	//Variables
