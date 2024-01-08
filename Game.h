@@ -6,8 +6,10 @@
 #include <iostream>
 #include <sstream>
 #include "Player.h"
+
 /*
 * Main game class - game engine
+* For details check Game.cpp
 */
 
 class Game: public Player

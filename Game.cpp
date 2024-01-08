@@ -3,10 +3,10 @@
 #include <iostream>
 using namespace std;
 
+//Initialising all variables for later use
 void Game::initVariables()
 {
 	this->window = nullptr;
-	//Game logic
 	float obstacle_spawn_timer;
 	float obstacle_spawn_timer_MAX;
 	int score;
@@ -36,14 +36,14 @@ void Game::initVariables()
 	this->tutorial_flag = true;
 }
 
-//Initializing Window
+//Initialising Window
 void Game::initWindow()
 {
 	this->window = new sf::RenderWindow(sf::VideoMode(1200, 800), "Don't Crash The Cat!", sf::Style::Titlebar | sf::Style::Close);
 	this->window->setFramerateLimit(60);
 }
 
-//Initializing obstacles
+//Initialising obstacles
 void Game::initObstacles()
 {
 	this->obstacle.setPosition(0, 0);
@@ -54,6 +54,7 @@ void Game::initObstacles()
 	this->obstacle_top.setFillColor(sf::Color::White);
 }
 
+//Initialising grpahics - setting textures and initial positions
 void Game::initBmp()
 {
 	this->welcomeBmp.loadFromFile("Graphics/welcome.bmp");
@@ -84,7 +85,7 @@ void Game::initBmp()
 	this->staticStars2.setPosition(1000, 0);
 }
 
-//Constructor
+//Constructor - calling all functions that initialise something
 Game::Game()
 {
 	this->initVariables();
@@ -98,19 +99,20 @@ Game::Game()
 	this->initUItext();
 }
 
-//Deconstructor
+//Deconstructor - deleting dynamic memory allocations to avoid memory leaks
 Game::~Game()
 {
 	delete this->window;
 	delete this->player;
 }
 
-//Getting window state
+//Getting window state - used to track if the main game loop should be still going
 const bool Game::getWindowIsOpen() const
 {
 	return this->window->isOpen();
 }
 
+//Rendering background - drawing tiles on respective layers with updated/initial positions
 void Game::renderBackground()
 {
 	this->window->draw(this->starsT1);
@@ -123,6 +125,7 @@ void Game::renderBackground()
 	this->window->draw(this->staticStars2);
 }
 
+//Updating background tiles to create parallax infinite-scrolling background effect
 void Game::updateBackground(float offset)
 {
 	this->starsT1.move(offset, 0);
@@ -157,6 +160,7 @@ void Game::updateBackground(float offset)
 	}
 }
 
+//Drawing welcome screen visible only on the first startup of the game
 void Game::renderWelcome()
 {
 	this->window->clear(sf::Color(0, 0, 0, 255));
@@ -165,6 +169,7 @@ void Game::renderWelcome()
 	this->window->display();
 }
 
+//Drawing fail screen visible every time user looses
 void Game::renderFail()
 {
 	this->window->clear(sf::Color(0, 0, 0, 255));
@@ -173,16 +178,19 @@ void Game::renderFail()
 	this->window->display();
 }
 
+//Initialising player as a new instance of the class
 void Game::initPlayer()
 {
 	this->player = new Player();
 }
 
+//Initialising font
 void Game::initFont()
 {
 	this->font.loadFromFile("Fonts/FFFFORWA.ttf");
 }
 
+//Initialising text that is part of the game
 void Game::initText()
 {
 	this->scoreText.setFont(this->font);
@@ -192,6 +200,7 @@ void Game::initText()
 	this->scoreText.setPosition(sf::Vector2f(10, 760));
 }
 
+//Initiaslising text that is a part of UI
 void Game::initUItext()
 {
 	this->uiText.setFont(this->font);
@@ -216,17 +225,20 @@ void Game::initUItext()
 	this->tutorialText.setPosition(400.f, 760.f);
 }
 
+//Drawing UI text on screen
 void Game::drawUItext()
 {
 	this->window->draw(this->uiText);
 	this->window->draw(this->uiTextscore);
 }
 
+//Drawing text that diplay current user score
 void Game::renderScoreText()
 {
 	this->window->draw(this->scoreText);
 }
 
+//Updating text that needs to be dynamically updated
 void Game::updateText()
 {
 	stringstream ss;
@@ -237,6 +249,7 @@ void Game::updateText()
 	this->uiTextscore.setString(ss2.str());
 }
 
+//Initialising outline of playing field
 void Game::initOutline()
 {
 	this->outline.setSize(sf::Vector2f(static_cast<float>(this->window->getSize().x) - 10.f, 700.f));
@@ -246,12 +259,15 @@ void Game::initOutline()
 	this->outline.setOutlineThickness(5.f);
 }
 
+//Drawing playing field
 void Game::drawOutline()
 {
 	this->window->draw(this->outline);
 }
 
-//Spawning Obstacles
+//Spawning Obstacles - first we randomise bottom obstacle inside bounds, then draw upper obstacle above with given gap size in between
+//then we push back the obstacles to obstacle vector to keeep track of them, and have a way of updating. Lastly we check if the 
+//obstacles are on the screen. If not, we delete the obstacle
 void Game::spawnObstacle()
 {
 	//bottom
@@ -284,7 +300,10 @@ void Game::spawnObstacle()
 	this->obstacle_top.setFillColor(sf::Color::White);
 	this->obstacles.push_back(this->obstacle_top);
 }
-//Updating obstacles
+
+//Updating obstacles. We check how many obstacles there are, if less than maximum we allow the spawning of a new pair after a given time (which is bound to framerate - 60Hz).
+//Then we iterate over obstacle vector to move them from left to right at a given speed. The speed is incresed with a score. Lastly, if we delete obstacle that means user 
+//has succesfully cleared them, so we add +1 to score. To obtain that we need ignore every other point, as obstacles come in pairs.
 void Game::updateObstacles()
 {
 	if (this->obstacles.size() < this->max_obstacles)
@@ -319,7 +338,7 @@ void Game::updateObstacles()
 	}
 }
 
-//Rendering Obstacles
+//Rendering Obstacles - drawing them on screen, by iterating over each one and bliting them on screen
 void Game::renderObstacles()
 {
 	for (auto& o : this->obstacles)
@@ -328,6 +347,8 @@ void Game::renderObstacles()
 	}
 }
 
+//Polling events - we can handle events that happen inside. For this project the only necessary one is handling window closure.
+//Essentially, if user closes it - it closes.
 void Game::pollEvents()
 {
 	while (this->window->pollEvent(this->ev))
@@ -340,10 +361,10 @@ void Game::pollEvents()
 	}
 }
 
-//Updating game
+//Updating game - home to most of the game logic
 void Game::update()
 {
-	//welcome screen at startup
+	//Welcome screen at startup - only at the first 
 	if (this->welcome_flag == true)
 	{
 		while (this->welcome_flag == true)
@@ -357,46 +378,63 @@ void Game::update()
 			}
 		}
 	}
+	//Calling essential functions as polling events, and updating game objects that need to be updated for the next frame
 	this->pollEvents();
 	this->updateBackground(this->offset);
 	this->updateObstacles();
 	this->updateText();
 	this->player->update();
+	//Calculating moving speed of things that move, that are not a player
 	this->offset = -0.3 - (this->score * 0.01);
-	//Handling keyboard input
+	//Handling keyboard input - checking if space is pressed or not
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
 	{
+		//Added gravity for incresed difficulty - the player accumulates acceleration when falling down, so the movement is smoother when he pulls up 
 		this->gravity -= 0.12;
+		//moving the player according to input and gravity
 		this->player->move(0, -1.5 + this->gravity);
+		//Changing texture of the cat according to movement
 		this->player->changeTextureUp();
+		//After user figures out that the space makes cat go up, no need to remind him of that
 		this->tutorial_flag = false;
 	}
 	else
 	{
+		//If space not pressed cat go down, also there is positive acceleration if cat goes up
 		this->gravity += 0.12;
 		this->player->move(0, 1.5 + this->gravity);
 		this->player->changeTextureDown();
 	}
+
+	//If cat touches floor or celling, it loses accumulated acceleration
 	if (this->player->touchingUp || this->player->touchingDown)
 	{
 		this->gravity = 0.f;
 	}
+
 	//Handling collisions
 	for (int i = 0; i < this->obstacles.size(); i++)
 	{
+		//If cat and obstacle intersects that means no bueno - game is lost
 		if (this->player->boundingBox.intersects(this->obstacles[i].getGlobalBounds()))
 		{
 			this->end_game = true;
 		}
 	}
-	//Failed screen
+	//Failed screen - displays score and resets game
 	if (this->end_game == true)
 	{
+		//Reseting speedup of parallax effects and obstacle speed
 		this->speedup = -4.f;
+		//Reseting score
 		this->score = 0;
+		//Clearing obstacles
 		this->obstacles.clear();
+		//Resetting player position to initial values
 		this->player->resetPos();
+		//If user forgot that space makes cat go up during the next round, remind him again for good measures
 		this->tutorial_flag = true;
+		//Drawing only failed screen until told otherwise by pressing 'C' (which is also told to the user)
 		while (this->end_game == true)
 		{
 			this->renderFail();
@@ -410,20 +448,23 @@ void Game::update()
 	}
 }
 
-//Rendering things
+//Rendering game objects that need to be rendered 
 void Game::render()
 {
-	//rendering game objects
+	//Clearing screen of junk from previous frame
 	this->window->clear(sf::Color(0, 0, 0, 255));
+	//Rendering game objects
 	this->renderBackground();
 	this->renderObstacles();
 	this->player->render(*this->window);
 	this->drawOutline();
 	this->renderScoreText();
+	//If player has pressed space he probably realised how to control the cat, so it will not draw the tutorial text after
 	if (this->tutorial_flag == true)
 	{
 		this->window->draw(this->tutorialText);
 	}
+	//Commiting changes to screen buffer
 	this->window->display();
 }
 

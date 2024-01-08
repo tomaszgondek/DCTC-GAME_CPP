@@ -4,7 +4,8 @@
 #include "SFML/Window.hpp"
 #include "SFML/Network.hpp"
 
-//Player class, handles player - input, graphics etc.
+//Player class
+//For details check Player.cpp
 class Player
 {
 private:

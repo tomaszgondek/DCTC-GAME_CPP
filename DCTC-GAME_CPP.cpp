@@ -1,18 +1,24 @@
 ﻿#include "Game.h" 
 #include <Windows.h> 
+#include <stdlib.h>  
+
 using namespace std;
 
 int main(void)
 {
+	//Hiding console
 	HWND hWnd = GetConsoleWindow();
 	ShowWindow(hWnd, SW_HIDE);
+	//Initialising pseudorandom number generation with some junk data seed
 	srand(static_cast<unsigned>(time(NULL)));
-	//init game engine
+	//Init game engine
 	Game game;
-	//game loop
+	//Main game loop - stops when user closes window
 	while (game.getWindowIsOpen())
 	{
+		//Updating and rendering
 		game.update();
 		game.render();
 	}
+	return 0;
 }
