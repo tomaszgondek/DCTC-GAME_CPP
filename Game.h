@@ -6,13 +6,13 @@
 #include <iostream>
 #include <sstream>
 #include "Player.h"
-
+#include "Menu.h"
 /*
 * Main game class - game engine
 * For details check Game.cpp
 */
 
-class Game: public Player
+class Game
 {
 private:
 	//Variables
@@ -29,11 +29,14 @@ private:
 	float gravity;
 	float speedup;
 	float offset;
+	float width;
+	float height;
 	bool end_game;
 	bool ignore_next_point;
 	int high_score;
 	bool welcome_flag;
 	bool tutorial_flag;
+	unsigned int stage;
 	//Game objects
 	std::vector<sf::RectangleShape> obstacles;
 	std::vector<sf::RectangleShape> obstacles_top;
@@ -56,6 +59,7 @@ private:
 	sf::Texture starTexture2;
 	sf::Texture starTexture3;
 	Player* player;
+	Menu* menu;
 	//Resources
 	sf::Font font;
 	//Text
@@ -66,6 +70,7 @@ private:
 	sf::Text tutorialText;
 	//Events
 	sf::Event ev;
+	sf::Event m_ev;
 	//private functions
 	void initVariables();
 	void initWindow();
@@ -84,6 +89,7 @@ public:
 	void renderWelcome();
 	void renderFail();
 	void initPlayer();
+	void initMenu();
 	void initFont();
 	void initText();
 	void initUItext();
@@ -98,6 +104,9 @@ public:
 	void pollEvents();
 	void update();
 	void render();
-	
+	void menuLoop();
+	void stageManager();
+	void playLoop();
+	sf::Font getFont();
 };
 

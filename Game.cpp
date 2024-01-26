@@ -1,12 +1,15 @@
 #include "Game.h"
 #include "Player.h"
+#include "Menu.h"
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 //Initialising all variables for later use
 void Game::initVariables()
 {
 	this->window = nullptr;
+	this->menu = nullptr;
 	float obstacle_spawn_timer;
 	float obstacle_spawn_timer_MAX;
 	int score;
@@ -15,6 +18,8 @@ void Game::initVariables()
 	float last_obstacle_y;
 	float gravity;
 	float speedup;
+	float height;
+	float width;
 	float offset;
 	bool end_game;
 	bool ignore_next_point;
@@ -34,12 +39,15 @@ void Game::initVariables()
 	this->high_score = 0;
 	this->welcome_flag = true;
 	this->tutorial_flag = true;
+	this->width = 1200;
+	this->height = 800;
+	this->stage = 1;
 }
 
 //Initialising Window
 void Game::initWindow()
 {
-	this->window = new sf::RenderWindow(sf::VideoMode(1200, 800), "Don't Crash The Cat!", sf::Style::Titlebar | sf::Style::Close);
+	this->window = new sf::RenderWindow(sf::VideoMode(this->width, this->height), "Don't Crash The Cat!", sf::Style::Titlebar | sf::Style::Close);
 	this->window->setFramerateLimit(60);
 }
 
@@ -85,11 +93,17 @@ void Game::initBmp()
 	this->staticStars2.setPosition(1000, 0);
 }
 
+sf::Font Game::getFont()
+{
+	return this->font;
+}
+
 //Constructor - calling all functions that initialise something
 Game::Game()
 {
 	this->initVariables();
 	this->initWindow();
+	this->initMenu();
 	this->initOutline();
 	this->initObstacles();
 	this->initFont();
@@ -104,6 +118,7 @@ Game::~Game()
 {
 	delete this->window;
 	delete this->player;
+	delete this->menu;
 }
 
 //Getting window state - used to track if the main game loop should be still going
@@ -182,6 +197,11 @@ void Game::renderFail()
 void Game::initPlayer()
 {
 	this->player = new Player();
+}
+
+void Game::initMenu()
+{
+	this->menu = new Menu(this->width, this->height);
 }
 
 //Initialising font
@@ -347,37 +367,63 @@ void Game::renderObstacles()
 	}
 }
 
-//Polling events - we can handle events that happen inside. For this project the only necessary one is handling window closure.
-//Essentially, if user closes it - it closes.
-void Game::pollEvents()
+void Game::menuLoop()
 {
-	while (this->window->pollEvent(this->ev))
+	while(true)
 	{
-		switch (this->ev.type)
+		this->menu->renderMenu(*this->window);
+		while (this->window->pollEvent(this->m_ev))
 		{
-		case sf::Event::Closed:
-			this->window->close();
+			if (this->m_ev.type == sf::Event::KeyPressed)
+			{
+				if (this->m_ev.key.code == sf::Keyboard::Up)
+				{
+					this->menu->moveUp();
+				}
+				if (this->m_ev.key.code == sf::Keyboard::Down)
+				{
+					this->menu->moveDown();
+				}
+				if (this->m_ev.key.code == sf::Keyboard::Escape)
+				{
+					this->window->close();
+				}
+				if (this->m_ev.key.code == sf::Keyboard::Enter)
+				{
+					std::cout << "ent";
+					if (this->menu->select_index == 0)
+					{
+						this->stage == 1;
+						break;
+					}
+				}
+			}
+			if (this->m_ev.type == sf::Event::Closed)
+			{
+				this->window->close();
+			}
+
+		}
+		this->window->display();
+	}
+}
+void Game::stageManager()
+{
+	switch (stage)
+	{
+	case 1:
+		{
+		this->menuLoop();
+		}
+	case 2:
+		{
+		this->playLoop();
 		}
 	}
 }
 
-//Updating game - home to most of the game logic
-void Game::update()
+void Game::playLoop()
 {
-	//Welcome screen at startup - only at the first 
-	if (this->welcome_flag == true)
-	{
-		while (this->welcome_flag == true)
-		{
-			this->renderWelcome();
-			this->pollEvents();
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
-			{
-				this->welcome_flag = false;
-				break;
-			}
-		}
-	}
 	//Calling essential functions as polling events, and updating game objects that need to be updated for the next frame
 	this->pollEvents();
 	this->updateBackground(this->offset);
@@ -446,6 +492,27 @@ void Game::update()
 			}
 		}
 	}
+	this->render();
+}
+
+//Polling events - we can handle events that happen inside. For this project the only necessary one is handling window closure.
+//Essentially, if user closes it - it closes.
+void Game::pollEvents()
+{
+	while (this->window->pollEvent(this->ev))
+	{
+		switch (this->ev.type)
+		{
+		case sf::Event::Closed:
+			this->window->close();
+		}
+	}
+}
+
+//Updating game - home to most of the game logic
+void Game::update()
+{
+	this->stageManager();
 }
 
 //Rendering game objects that need to be rendered 
@@ -467,5 +534,7 @@ void Game::render()
 	//Commiting changes to screen buffer
 	this->window->display();
 }
+
+
 
 

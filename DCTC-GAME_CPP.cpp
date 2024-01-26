@@ -7,8 +7,8 @@ using namespace std;
 int main(void)
 {
 	//Hiding console
-	HWND hWnd = GetConsoleWindow();
-	ShowWindow(hWnd, SW_HIDE);
+	//HWND hWnd = GetConsoleWindow();
+	//ShowWindow(hWnd, SW_HIDE);
 	//Initialising pseudorandom number generation with some junk data seed
 	srand(static_cast<unsigned>(time(NULL)));
 	//Init game engine
@@ -16,9 +16,7 @@ int main(void)
 	//Main game loop - stops when user closes window
 	while (game.getWindowIsOpen())
 	{
-		//Updating and rendering
 		game.update();
-		game.render();
 	}
 	return 0;
 }
