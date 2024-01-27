@@ -622,10 +622,11 @@ void Game::leaderboardLoop()
 	t3.setPosition(sf::Vector2f(600, 500));
 	t3.setString("press 'c' to return");
 	t3.setCharacterSize(25);
+	int tm = min(static_cast<int>(userScores.size() - 1), 12);
 	while (this->isRunning)
 	{
 		this->window->clear(sf::Color::Black);
-		for (int i = 0; i < userScores.size() - 1; i++)
+		for (int i = 0; i < tm; i++)
 		{
 			t.setString(to_string(i + 1) + "." + userScores[i].first);
 			t.setPosition(sf::Vector2f(100, 100 + 50 * i));
