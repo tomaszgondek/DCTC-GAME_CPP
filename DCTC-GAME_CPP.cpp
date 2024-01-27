@@ -18,5 +18,6 @@ int main(void)
 	{
 		game.update();
 	}
+	//CloseWindow(hWnd);
 	return 0;
 }

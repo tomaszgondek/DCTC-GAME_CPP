@@ -3,6 +3,8 @@
 #include "Menu.h"
 #include <iostream>
 #include <string.h>
+#include "userTextInput.h"
+#include <fstream>
 using namespace std;
 
 //Initialising all variables for later use
@@ -42,6 +44,7 @@ void Game::initVariables()
 	this->width = 1200;
 	this->height = 800;
 	this->stage = 1;
+	this->isRunning = 1;
 }
 
 //Initialising Window
@@ -111,11 +114,13 @@ Game::Game()
 	this->initPlayer();
 	this->initBmp();
 	this->initUItext();
+	this->readSave();
 }
 
 //Deconstructor - deleting dynamic memory allocations to avoid memory leaks
 Game::~Game()
 {
+	this->gameSave(this->userScores);
 	delete this->window;
 	delete this->player;
 	delete this->menu;
@@ -226,7 +231,7 @@ void Game::initUItext()
 	this->uiText.setFont(this->font);
 	this->uiText.setCharacterSize(30);
 	this->uiText.setFillColor(sf::Color::White);
-	this->uiText.setString("Press 'C' to restart");
+	this->uiText.setString("Press 'C' to continue");
 	this->uiText.setPosition(425.f, 740.f);
 	this->uiTextscore.setFont(this->font);
 	this->uiTextscore.setCharacterSize(80);
@@ -369,7 +374,7 @@ void Game::renderObstacles()
 
 void Game::menuLoop()
 {
-	while(true)
+	while(this->isRunning)
 	{
 		this->menu->renderMenu(*this->window);
 		while (this->window->pollEvent(this->m_ev))
@@ -387,112 +392,274 @@ void Game::menuLoop()
 				if (this->m_ev.key.code == sf::Keyboard::Escape)
 				{
 					this->window->close();
+					this->isRunning = false;
+					break;
 				}
 				if (this->m_ev.key.code == sf::Keyboard::Enter)
 				{
-					std::cout << "ent";
 					if (this->menu->select_index == 0)
 					{
-						this->stage == 1;
+						this->stage = 2;
+						this->isRunning = false;
+					}
+					if (this->menu->select_index == 1)
+					{
+						this->stage = 4;
+						this->isRunning = false;
+					}
+					if (this->menu->select_index == 2)
+					{
+						this->window->close();
+						this->isRunning = false;
 						break;
 					}
 				}
+				cout << menu->select_index << endl;
 			}
 			if (this->m_ev.type == sf::Event::Closed)
 			{
 				this->window->close();
+				this->isRunning = false;
+				break;
 			}
 
 		}
 		this->window->display();
 	}
+	this->isRunning = true;
 }
+
 void Game::stageManager()
 {
-	switch (stage)
-	{
-	case 1:
-		{
-		this->menuLoop();
-		}
-	case 2:
-		{
-		this->playLoop();
-		}
-	}
+	
+	if (stage == 1) this->menuLoop();
+	if (stage == 2) this->playLoop();
+	if (stage == 3) this->endGameLoop();
+	if (stage == 4) this->leaderboardLoop();
 }
 
 void Game::playLoop()
 {
-	//Calling essential functions as polling events, and updating game objects that need to be updated for the next frame
-	this->pollEvents();
-	this->updateBackground(this->offset);
-	this->updateObstacles();
-	this->updateText();
-	this->player->update();
-	//Calculating moving speed of things that move, that are not a player
-	this->offset = -0.3 - (this->score * 0.01);
-	//Handling keyboard input - checking if space is pressed or not
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	while (this->isRunning)
 	{
-		//Added gravity for incresed difficulty - the player accumulates acceleration when falling down, so the movement is smoother when he pulls up 
-		this->gravity -= 0.12;
-		//moving the player according to input and gravity
-		this->player->move(0, -1.5 + this->gravity);
-		//Changing texture of the cat according to movement
-		this->player->changeTextureUp();
-		//After user figures out that the space makes cat go up, no need to remind him of that
-		this->tutorial_flag = false;
-	}
-	else
-	{
-		//If space not pressed cat go down, also there is positive acceleration if cat goes up
-		this->gravity += 0.12;
-		this->player->move(0, 1.5 + this->gravity);
-		this->player->changeTextureDown();
-	}
-
-	//If cat touches floor or celling, it loses accumulated acceleration
-	if (this->player->touchingUp || this->player->touchingDown)
-	{
-		this->gravity = 0.f;
-	}
-
-	//Handling collisions
-	for (int i = 0; i < this->obstacles.size(); i++)
-	{
-		//If cat and obstacle intersects that means no bueno - game is lost
-		if (this->player->boundingBox.intersects(this->obstacles[i].getGlobalBounds()))
+		//Calling essential functions as polling events, and updating game objects that need to be updated for the next frame
+		this->pollEvents();
+		this->updateBackground(this->offset);
+		this->updateObstacles();
+		this->updateText();
+		this->player->update();
+		//Calculating moving speed of things that move, that are not a player
+		this->offset = -0.3 - (this->score * 0.01);
+		//Handling keyboard input - checking if space is pressed or not
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
 		{
-			this->end_game = true;
+			//Added gravity for incresed difficulty - the player accumulates acceleration when falling down, so the movement is smoother when he pulls up 
+			this->gravity -= 0.12;
+			//moving the player according to input and gravity
+			this->player->move(0, -1.5 + this->gravity);
+			//Changing texture of the cat according to movement
+			this->player->changeTextureUp();
+			//After user figures out that the space makes cat go up, no need to remind him of that
+			this->tutorial_flag = false;
 		}
-	}
-	//Failed screen - displays score and resets game
-	if (this->end_game == true)
-	{
-		//Reseting speedup of parallax effects and obstacle speed
-		this->speedup = -4.f;
-		//Reseting score
-		this->score = 0;
-		//Clearing obstacles
-		this->obstacles.clear();
-		//Resetting player position to initial values
-		this->player->resetPos();
-		//If user forgot that space makes cat go up during the next round, remind him again for good measures
-		this->tutorial_flag = true;
-		//Drawing only failed screen until told otherwise by pressing 'C' (which is also told to the user)
-		while (this->end_game == true)
+		else
 		{
-			this->renderFail();
-			this->pollEvents();
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
+			//If space not pressed cat go down, also there is positive acceleration if cat goes up
+			this->gravity += 0.12;
+			this->player->move(0, 1.5 + this->gravity);
+			this->player->changeTextureDown();
+		}
+
+		//If cat touches floor or celling, it loses accumulated acceleration
+		if (this->player->touchingUp || this->player->touchingDown)
+		{
+			this->gravity = 0.f;
+		}
+
+		//Handling collisions
+		for (int i = 0; i < this->obstacles.size(); i++)
+		{
+			//If cat and obstacle intersects that means no bueno - game is lost
+			if (this->player->boundingBox.intersects(this->obstacles[i].getGlobalBounds()))
 			{
-				this->end_game = false;
-				break;
+				this->end_game = true;
 			}
 		}
+		//Failed screen - displays score and resets game
+		if (this->end_game == true)
+		{
+			//Reseting speedup of parallax effects and obstacle speed
+			this->speedup = -4.f;
+			//Clearing obstacles
+			this->obstacles.clear();
+			//Resetting player position to initial values
+			this->player->resetPos();
+			//If user forgot that space makes cat go up during the next round, remind him again for good measures
+			this->tutorial_flag = true;
+			//Drawing only failed screen until told otherwise by pressing 'C' (which is also told to the user)
+			this->stage = 3;
+			this->isRunning = false;
+			break;
+		}
+		this->render();
 	}
-	this->render();
+	this->isRunning = true;
+}
+
+void Game::endGameLoop()
+{
+	while (this->isRunning)
+	{
+		this->renderFail();
+		this->pollEvents();
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
+		{
+			this->end_game = false;
+			break;
+		}
+	}
+	this->isRunning = true;
+	this->textBox = new userTextInput(30, sf::Color::White, 1, this->score);
+	this->textBox->setPosition(sf::Vector2f(300, 200));
+	this->textBox->setLimit(1, 20);
+	while (this->isRunning)
+	{
+		this->window->clear(sf::Color::Black);
+		while (this->window->pollEvent(this->t_ev))
+		{
+			switch (this->t_ev.type)
+			{
+				case sf::Event::TextEntered:
+				{
+					this->textBox->typed(this->t_ev);
+				}
+				case sf::Event::KeyPressed:
+				{
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+					{
+						this->isRunning = false;
+						this->stage = 1;
+						break;
+					}
+				}
+			}
+		}
+		this->textBox->render(*this->window);
+		this->window->display();
+	}
+	this->isRunning = true;
+	this->stage = 1;
+	this->userScores.push_back(std::make_pair(this->textBox->getText(), this->score));
+	this->gameSave(this->userScores);
+	delete this->textBox;
+	this->score = 0;
+}
+
+void Game::userInputLoop()
+{
+	
+}
+
+void Game::gameSave(std::vector<std::pair<std::string, int>> data)
+{
+	std::ofstream ofs;
+	ofs.open("Saves/save.txt", std::ofstream::out | std::ofstream::trunc);
+	ofs.close();
+	ofs.open("Saves/save.txt");
+	for (auto const& x : data)
+	{
+		ofs << x.first << "." << x.second << endl;
+	}
+	ofs.close();
+}
+
+void Game::readSave()
+{
+	std::string temp, temp2, usr;
+	bool b = false;
+	int s;
+	std::ifstream ifs;
+	ifs.open("Saves/save.txt");
+	while (std::getline(ifs, temp, '\n'))
+	{
+		std::stringstream ss3(temp);
+		while (std::getline(ss3, temp2, '.'))
+		{
+			if (!b)
+			{
+				usr = temp2;
+				b = true;
+			}
+			else
+			{
+				s = std::stoi(temp2);
+				b = false;
+			}
+		}
+		userScores.push_back(make_pair(usr, s));
+	}
+	ifs.close();
+}
+
+void Game::leaderboardLoop()
+{
+	std::sort(userScores.begin(), userScores.end(), [](auto& left, auto& right) 
+		{
+		return left.second > right.second;
+		});
+	sf::Text t, t2, t3;
+	string tt;
+	t.setFont(this->font);
+	t.setFillColor(sf::Color::White);
+	t.setCharacterSize(20);
+	t2.setFont(this->font);
+	t2.setFillColor(sf::Color::White);
+	t2.setPosition(sf::Vector2f(600, 400));
+	t2.setString("HALL OF FAME");
+	t2.setCharacterSize(45);
+	t3.setFont(this->font);
+	t3.setFillColor(sf::Color::White);
+	t3.setPosition(sf::Vector2f(600, 500));
+	t3.setString("press 'c' to return");
+	t3.setCharacterSize(25);
+	while (this->isRunning)
+	{
+		this->window->clear(sf::Color::Black);
+		for (int i = 0; i < userScores.size() - 1; i++)
+		{
+			t.setString(to_string(i + 1) + "." + userScores[i].first);
+			t.setPosition(sf::Vector2f(100, 100 + 50 * i));
+			this->window->draw(t);
+			t.setString(to_string(userScores[i].second));
+			t.setPosition(sf::Vector2f(430, 100 + 50 * i));
+			this->window->draw(t);
+		}
+		while (this->window->pollEvent(this->t_ev))
+		{
+			switch (this->t_ev.type)
+			{
+			case sf::Event::KeyPressed:
+			{
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
+				{
+					this->isRunning = false;
+					this->stage = 1;
+					break;
+				}
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
+				{
+					this->window->close();
+					break;
+				}
+			}
+
+			}
+		}
+		this->window->draw(t3);
+		this->window->draw(t2);
+		this->window->display();
+	}
+	this->isRunning = true;
 }
 
 //Polling events - we can handle events that happen inside. For this project the only necessary one is handling window closure.

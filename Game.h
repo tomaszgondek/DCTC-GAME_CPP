@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include "Player.h"
+#include "userTextInput.h"
 #include "Menu.h"
 /*
 * Main game class - game engine
@@ -36,6 +37,7 @@ private:
 	int high_score;
 	bool welcome_flag;
 	bool tutorial_flag;
+	bool isRunning;
 	unsigned int stage;
 	//Game objects
 	std::vector<sf::RectangleShape> obstacles;
@@ -58,8 +60,10 @@ private:
 	sf::Texture starTexture;
 	sf::Texture starTexture2;
 	sf::Texture starTexture3;
+	std::vector<std::pair<std::string, int>> userScores;
 	Player* player;
 	Menu* menu;
+	userTextInput* textBox;
 	//Resources
 	sf::Font font;
 	//Text
@@ -71,6 +75,7 @@ private:
 	//Events
 	sf::Event ev;
 	sf::Event m_ev;
+	sf::Event t_ev;
 	//private functions
 	void initVariables();
 	void initWindow();
@@ -107,6 +112,11 @@ public:
 	void menuLoop();
 	void stageManager();
 	void playLoop();
+	void endGameLoop();
+	void userInputLoop();
+	void gameSave(std::vector<std::pair<std::string, int>> data);
+	void readSave();
+	void leaderboardLoop();
 	sf::Font getFont();
 };
 
