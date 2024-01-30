@@ -7,8 +7,9 @@
 #define MAX_ITEMS 3
 #include <string>
 #include <stdio.h>
+#include "GameObject.h"
 
-class Menu
+class Menu : public GameObject
 {
 private: 
 	float width, height;
@@ -24,5 +25,5 @@ public:
 	std::vector<sf::Text> d_texts;
 	void moveUp();
 	void moveDown();
-	void renderMenu(sf::RenderTarget& target);
+	void render(sf::RenderTarget& target);
 };

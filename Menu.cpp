@@ -89,7 +89,7 @@ void Menu::moveDown()
 	}
 }
 
-void Menu::renderMenu(sf::RenderTarget& target)
+void Menu::render(sf::RenderTarget& target)
 {
 	target.clear(sf::Color::Black);
 	target.draw(this->title);

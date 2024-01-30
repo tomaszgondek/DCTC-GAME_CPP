@@ -3,7 +3,7 @@
 #include "SFML/System.hpp"
 #include "SFML/Window.hpp"
 #include "SFML/Network.hpp"
-
+#include "GameObject.h"
 //Player class
 //For details check Player.cpp
 class Player

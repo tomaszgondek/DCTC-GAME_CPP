@@ -418,7 +418,7 @@ void Game::menuLoop()
 {
 	while(this->isRunning)
 	{
-		this->menu->renderMenu(*this->window);
+		this->menu->render(*this->window);
 		while (this->window->pollEvent(this->m_ev))
 		{
 			if (this->m_ev.type == sf::Event::KeyPressed)
