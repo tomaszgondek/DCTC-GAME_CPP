@@ -113,7 +113,6 @@ public:
 	void stageManager();
 	void playLoop();
 	void endGameLoop();
-	void userInputLoop();
 	void gameSave(std::vector<std::pair<std::string, int>> data);
 	void readSave();
 	void leaderboardLoop();

@@ -44,7 +44,6 @@ Menu::Menu(float width, float height)
 	this->text.setString(this->quit1);
 	this->text.setPosition(sf::Vector2f(this->width / 2, 500));
 	this->texts.push_back(text);
-	std::cout << texts.size();
 
 	this->text.setFillColor(sf::Color::White);
 	this->text.setFont(this->font);
@@ -66,7 +65,6 @@ Menu::Menu(float width, float height)
 	this->text.setString(this->quit2);
 	this->text.setPosition(sf::Vector2f(this->width / 2, 500));
 	this->texts.push_back(text);
-	std::cout << texts.size();
 }
 
 Menu::~Menu()

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string.h>
 #include "userTextInput.h"
+#include "LoadingException.h"
 #include <fstream>
 using namespace std;
 
@@ -50,8 +51,17 @@ void Game::initVariables()
 //Initialising Window
 void Game::initWindow()
 {
-	this->window = new sf::RenderWindow(sf::VideoMode(this->width, this->height), "Don't Crash The Cat!", sf::Style::Titlebar | sf::Style::Close);
-	this->window->setFramerateLimit(60);
+	try
+	{
+		if (!(this->window = new sf::RenderWindow(sf::VideoMode(this->width, this->height), "Don't Crash The Cat!", sf::Style::Titlebar | sf::Style::Close)))
+			throw LoadingException("Creating Window", 1);
+		this->window->setFramerateLimit(60);
+	}
+	catch (LoadingException& e)
+	{
+		cerr << e.what() << endl;
+		window->close();
+	}
 }
 
 //Initialising obstacles
@@ -68,16 +78,25 @@ void Game::initObstacles()
 //Initialising grpahics - setting textures and initial positions
 void Game::initBmp()
 {
-	this->welcomeBmp.loadFromFile("Graphics/welcome.bmp");
-	this->welcomeScreen.setTexture(this->welcomeBmp);
-	this->failBmp.loadFromFile("Graphics/failed.bmp");
+	try
+	{
+		if(!this->welcomeBmp.loadFromFile("Graphics/welcome.bmp")) throw LoadingException("Graphics/welcome.bmp");
+		if(!this->failBmp.loadFromFile("Graphics/failed.bmp")) throw LoadingException("Graphics/failed.bmp");
+		if(!this->starTexture.loadFromFile("Graphics/starsv3.png")) throw LoadingException("Graphics/starsv3.png");
+		if(!this->starTexture2.loadFromFile("Graphics/starsB.png")) throw LoadingException("Graphics/starsB.png");
+	    if(!this->starTexture3.loadFromFile("Graphics/staticstars.png")) throw LoadingException("Graphics/staticstars.png");
+	}
+	catch (LoadingException &e)
+	{
+		cerr << e.what() << endl;
+		window->close();
+	}
 	this->failScreen.setTexture(this->failBmp);
 	this->welcomeScreen.setScale(9.375, 9.375);
 	this->failScreen.setScale(9.375, 9.375);
 	this->welcomeScreen.setPosition(0.f, 100.f);
 	this->failScreen.setPosition(0.f, 100.f);
-	this->starTexture.loadFromFile("Graphics/starsv3.png");
-	this->starTexture2.loadFromFile("Graphics/starsB.png");
+	this->welcomeScreen.setTexture(this->welcomeBmp);
 	this->starsT1.setTexture(this->starTexture);
 	this->starsT1.setPosition(0, 30);
 	this->starsT2.setTexture(this->starTexture);
@@ -90,7 +109,6 @@ void Game::initBmp()
 	this->starsT21.setPosition(650.f, 30);
 	this->starsT31.setTexture(this->starTexture2);
 	this->starsT31.setPosition(1300, 30);
-	this->starTexture3.loadFromFile("Graphics/staticstars.png");
 	this->staticStars.setTexture(this->starTexture3);
 	this->staticStars2.setTexture(this->starTexture3);
 	this->staticStars2.setPosition(1000, 0);
@@ -201,18 +219,42 @@ void Game::renderFail()
 //Initialising player as a new instance of the class
 void Game::initPlayer()
 {
-	this->player = new Player();
+	try
+	{
+		if (!(this->player = new Player())) throw LoadingException("Creating Player", 1);
+	}
+	catch (LoadingException& e)
+	{
+		cerr << e.what() << endl;
+		window->close();
+	}
 }
 
 void Game::initMenu()
 {
-	this->menu = new Menu(this->width, this->height);
+	try
+	{
+		if(!(this->menu = new Menu(this->width, this->height))) throw LoadingException("Creating Menu", 1);
+	}
+	catch (LoadingException& e)
+	{
+		cerr << e.what() << endl;
+		window->close();
+	}
 }
 
 //Initialising font
 void Game::initFont()
 {
-	this->font.loadFromFile("Fonts/FFFFORWA.ttf");
+	try
+	{
+		if(!this->font.loadFromFile("Fonts/FFFFORWA.ttf")) throw LoadingException("Fonts/FFFFORWA.ttf");
+	}
+	catch (LoadingException& e)
+	{
+		cerr << e.what() << endl;
+		window->close();
+	}
 }
 
 //Initialising text that is part of the game
@@ -414,7 +456,6 @@ void Game::menuLoop()
 						break;
 					}
 				}
-				cout << menu->select_index << endl;
 			}
 			if (this->m_ev.type == sf::Event::Closed)
 			{
@@ -555,50 +596,63 @@ void Game::endGameLoop()
 	this->score = 0;
 }
 
-void Game::userInputLoop()
-{
-	
-}
-
 void Game::gameSave(std::vector<std::pair<std::string, int>> data)
 {
-	std::ofstream ofs;
-	ofs.open("Saves/save.txt", std::ofstream::out | std::ofstream::trunc);
-	ofs.close();
-	ofs.open("Saves/save.txt");
-	for (auto const& x : data)
+	try
 	{
-		ofs << x.first << "." << x.second << endl;
+		std::ofstream ofs;
+		ofs.open("Saves/save.txt", std::ofstream::out | std::ofstream::trunc);
+		if (!ofs) throw LoadingException("Saving Game", 2);
+		ofs.close();
+		ofs.open("Saves/save.txt");
+		if (!ofs) throw LoadingException("Saving Game", 2);
+		for (auto const& x : data)
+		{
+			ofs << x.first << "." << x.second << endl;
+		}
+		ofs.close();
 	}
-	ofs.close();
+	catch(LoadingException &e)
+	{
+		cerr << e.what() << endl;
+	}
+	
 }
 
 void Game::readSave()
 {
-	std::string temp, temp2, usr;
-	bool b = false;
-	int s;
-	std::ifstream ifs;
-	ifs.open("Saves/save.txt");
-	while (std::getline(ifs, temp, '\n'))
+	try
 	{
-		std::stringstream ss3(temp);
-		while (std::getline(ss3, temp2, '.'))
+		std::string temp, temp2, usr;
+		bool b = false;
+		int s;
+		std::ifstream ifs;
+		ifs.open("Saves/save.txt");
+		if (!ifs) throw LoadingException("Reading Save", 2);
+		while (std::getline(ifs, temp, '\n'))
 		{
-			if (!b)
+			std::stringstream ss3(temp);
+			while (std::getline(ss3, temp2, '.'))
 			{
-				usr = temp2;
-				b = true;
+				if (!b)
+				{
+					usr = temp2;
+					b = true;
+				}
+				else
+				{
+					s = std::stoi(temp2);
+					b = false;
+				}
 			}
-			else
-			{
-				s = std::stoi(temp2);
-				b = false;
-			}
+			userScores.push_back(make_pair(usr, s));
 		}
-		userScores.push_back(make_pair(usr, s));
+		ifs.close();
 	}
-	ifs.close();
+	catch (LoadingException& e)
+	{
+		cerr << e.what() << endl;
+	}
 }
 
 void Game::leaderboardLoop()
@@ -702,7 +756,3 @@ void Game::render()
 	//Commiting changes to screen buffer
 	this->window->display();
 }
-
-
-
-
